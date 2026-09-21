@@ -1,5 +1,4 @@
 # smart-inventory-management-system
-# Smart Inventory Management System
 
 A command-line inventory management application written in C++17 for a small retail shop. 
 The system allows the owner to manage products and suppliers, record stock-in/stock-out transactions, 
