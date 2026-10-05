@@ -1,0 +1,4 @@
+tx_id,product_id,type,quantity,date
+T00001,P001,IN,40,2026-10-05
+T00002,P002,IN,12,2026-10-05
+T00003,P001,OUT,14,2026-10-05
