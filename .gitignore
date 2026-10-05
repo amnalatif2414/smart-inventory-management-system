@@ -1,0 +1,11 @@
+build*/
+out/
+cmake-build-*/
+*.o
+*.obj
+*.exe
+test_data/
+test_bad/
+.vscode/
+.idea/
+.DS_Store
