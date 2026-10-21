@@ -9,3 +9,8 @@ test_bad/
 .vscode/
 .idea/
 .DS_Store
+
+# scratch directories created by the test executable
+test_data/
+test_bad/
+test_missing/

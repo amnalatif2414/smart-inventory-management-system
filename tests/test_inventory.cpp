@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -210,6 +211,14 @@ static void test_malformed() {
 }
 
 int main() {
+    // The tests read and write a few scratch directories. Create them here
+    // rather than relying on the build system or on the working directory,
+    // so the executable can be run from anywhere.
+    for (const char* d : { "test_data", "test_bad", "test_missing" }) {
+        std::error_code ec;
+        std::filesystem::create_directories(d, ec);   // already existing is fine
+    }
+
     std::cout << "Running Smart Inventory Management System tests\n\n";
     test_empty();
     test_add_validation();

@@ -37,6 +37,4 @@ add_executable(inventory_tests tests/test_inventory.cpp)
 target_link_libraries(inventory_tests PRIVATE inventory_core)
 add_test(NAME unit_tests COMMAND inventory_tests)
 
-# the test suite writes into these directories
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_data)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_bad)
+# (the test executable creates its own scratch directories at run time)
