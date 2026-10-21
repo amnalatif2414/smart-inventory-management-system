@@ -23,6 +23,7 @@ cmake --build build -j
 cmake -B build
 cmake --build build --config Debug
 build\Debug\inventory.exe
+build\Debug\inventory_tests.exe
 ```
 
 The program reads and writes `products.csv`, `suppliers.csv` and
@@ -39,7 +40,7 @@ cp data/*.csv .
 ```bash
 cd build && ctest --output-on-failure
 # or directly, for the per-group output:
-./build/run_tests
+./build/inventory_tests
 ```
 
 Expected: `ALL TESTS PASSED (270 checks, 10 test groups)`.
@@ -47,8 +48,8 @@ Expected: `ALL TESTS PASSED (270 checks, 10 test groups)`.
 Memory checks:
 ```bash
 cmake -B build-asan -DENABLE_ASAN=ON && cmake --build build-asan -j
-./build-asan/run_tests
-valgrind --leak-check=full ./build/run_tests
+./build-asan/inventory_tests
+valgrind --leak-check=full ./build/inventory_tests
 ```
 
 ## Layout

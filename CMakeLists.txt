@@ -28,11 +28,14 @@ target_include_directories(inventory_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 add_executable(inventory src/console_ui.cpp src/main.cpp)
 target_link_libraries(inventory PRIVATE inventory_core)
 
+# NOTE: the target must NOT be called "run_tests" -- enable_testing() makes the
+# Visual Studio generator create a built-in RUN_TESTS target, and the two
+# collide on Windows's case-insensitive filesystem.
 # ---- assert-based test executable -----------------------------------------
 enable_testing()
-add_executable(run_tests tests/test_inventory.cpp)
-target_link_libraries(run_tests PRIVATE inventory_core)
-add_test(NAME unit_tests COMMAND run_tests)
+add_executable(inventory_tests tests/test_inventory.cpp)
+target_link_libraries(inventory_tests PRIVATE inventory_core)
+add_test(NAME unit_tests COMMAND inventory_tests)
 
 # the test suite writes into these directories
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_data)
