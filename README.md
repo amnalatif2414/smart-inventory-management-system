@@ -1,79 +1,116 @@
 # Smart Inventory Management System
 
-Portfolio project for **DLBMINPAPCC01_E — Project: General Programming with C/C++**,
-Task 3. Amna Latif, reg. no. 9211652.
+## 1. Project Overview
 
-A C++17 command-line inventory application for a small retail shop. It manages
-products, suppliers and a stock transaction history, and persists everything to
-three CSV files so the data survives a restart.
+A C++17 command-line application for managing inventory in a small retail shop.
+It maintains products, suppliers and a stock transaction history, generates stock
+reports, and stores everything in three CSV files so the data survives a restart.
 
-## Build and run
+Single-user, no graphical interface, no database and no external libraries.
 
-Requires a C++17 compiler and CMake 3.16+. No external dependencies.
+## 2. Features
 
-### Linux / macOS
+- **Products** — add, edit, remove, search by ID or name, sort by name or quantity
+- **Suppliers** — store supplier records and link them to products
+- **Stock transactions** — record stock-in and stock-out movements with a full history
+- **Reports** — current stock with total value, and low-stock items with their supplier
+- **Validation** — rejects duplicate IDs, invalid fields and non-numeric input
+- **Persistence** — CSV files loaded at start-up and saved after every change
+
+## 3. Requirements
+
+- A C++ compiler supporting C++17 (GCC, Clang or MSVC)
+- CMake 3.16 or later
+
+Nothing else — the project has no external dependencies.
+
+## 4. Build
+
+Run from the repository root.
+
+**Linux / macOS**
+
 ```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j
-./build/inventory
 ```
 
-### Windows (Visual Studio Developer Command Prompt)
+**Windows** (Visual Studio Developer Command Prompt)
+
 ```bat
-cmake -B build
+cmake -S . -B build
 cmake --build build --config Debug
-build\Debug\inventory.exe
-build\Debug\inventory_tests.exe
 ```
 
-The program reads and writes `products.csv`, `suppliers.csv` and
-`transactions.csv` **in the current working directory**. To start from the
-bundled sample data:
+## 5. Run
 
 ```bash
-cp data/*.csv .
-./build/inventory
+./build/inventory                 # Windows:  build\Debug\inventory.exe
 ```
 
-## Run the tests
+The application reads and writes `products.csv`, `suppliers.csv` and
+`transactions.csv` in its **current working directory**. To start from the bundled
+sample data, copy it there first:
 
 ```bash
-cd build && ctest --output-on-failure
-# or directly, for the per-group output:
-./build/inventory_tests
+cp data/*.csv .                   # Windows:  copy data\*.csv .
 ```
 
-Expected: `ALL TESTS PASSED (270 checks, 10 test groups)`.
+Field definitions and the full file-format specification are in
+[`docs/CODEBOOK.md`](docs/CODEBOOK.md).
 
-Memory checks:
+## 6. Testing
+
 ```bash
-cmake -B build-asan -DENABLE_ASAN=ON && cmake --build build-asan -j
-./build-asan/inventory_tests
-valgrind --leak-check=full ./build/inventory_tests
+ctest --test-dir build --output-on-failure
 ```
 
-## Layout
+Or run the test executable directly:
+
+```bash
+./build/inventory_tests           # Windows:  build\Debug\inventory_tests.exe
+```
+
+Expected result:
 
 ```
+ALL TESTS PASSED  (270 checks, 10 test groups)
+```
+
+The suite covers an empty inventory, duplicate IDs, invalid fields, negative and
+excessive quantities, CSV quoting, missing and malformed files, and persistence
+across a restart. It exits with a non-zero status if any check fails.
+
+## 7. Application Architecture
+
+Three layers, each in its own header and source file:
+
+| Layer | Files | Responsibility |
+|---|---|---|
+| Interface | `console_ui.cpp`, `main.cpp` | Reads and validates menu input |
+| Logic | `inventory.cpp` | Owns the records and enforces the rules |
+| Data | `types.hpp`, `csv_storage.cpp` | Record types and CSV persistence |
+
+```text
 include/inventory/    public headers
-  types.hpp             Product, Supplier, Transaction, TxType
-  inventory.hpp         Inventory class - owns the records, enforces the rules
-  csv_storage.hpp       CsvStorage class - load / save / RFC-4180 quoting
-  console_ui.hpp        ConsoleUI class - the menu
 src/                  implementation
-tests/                assert-based test executable
-docs/CODEBOOK.md      field-by-field reference and file format
-data/                 sample CSV files
+tests/                automated test suite
+docs/CODEBOOK.md      data dictionary and file-format reference
+data/                 sample CSV data
 ```
 
-Layers: interface = `console_ui.cpp` + `main.cpp`; logic = `inventory.cpp`;
-data = `types.hpp` + `csv_storage.cpp`.
+Records are held in `std::vector` containers that own them, with an
+`unordered_map` from ID to position for fast lookup. Entities reference each other
+by ID rather than by pointer, so the relationships survive being written to disk
+and read back.
 
-## Rules the program enforces
+## 8. Business Rules
 
-- Stock can never become negative — a stock-OUT larger than the quantity on hand is refused.
-- Quantities change **only** through a recorded transaction, so the log always explains the stock level.
-- Duplicate product or supplier IDs are rejected.
-- Non-numeric input is re-prompted rather than accepted.
-- A missing CSV file gives an empty collection with a warning; a malformed row is skipped and reported with its line number.
-- Saving writes to a temporary file and then renames, so an interrupted save cannot corrupt the data.
+- **Stock can never go negative** — a stock-out larger than the quantity on hand is refused
+- **Quantities change only through a recorded transaction**, so the log always explains the stock level
+- **Duplicate product or supplier IDs are rejected**
+- **Non-numeric input is re-prompted**, not accepted
+- **A missing CSV file** gives an empty collection and a warning rather than a crash
+- **A malformed row** is skipped and reported with its line number
+- **Saving is atomic** — written to a temporary file and then renamed, so an
+  interrupted save cannot corrupt the data
