@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// test_inventory.cpp -- assert-based test executable (Phase 1, section 5).
+// test_inventory.cpp -- self-contained test executable (Phase 1, section 5).
 // Covers product operations, stock calculations, search and sort, reports,
 // invalid input, an empty inventory, missing and malformed files, and
 // persistence across a restart. Returns 0 only if every check passes.
