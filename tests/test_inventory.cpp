@@ -8,7 +8,7 @@
 #include "inventory/csv_storage.hpp"
 #include "inventory/inventory.hpp"
 
-#include <cassert>
+
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -18,7 +18,20 @@
 using namespace inv;
 
 static int g_checks = 0;
-#define CHECK(expr) do { ++g_checks; assert(expr); } while (0)
+static int g_failed = 0;
+
+// Deliberately NOT assert(): assert compiles away when NDEBUG is defined, which
+// CMake does in a Release build, so the suite would report "all passed" without
+// verifying anything. This macro behaves identically in every configuration.
+#define CHECK(expr)                                                            \
+    do {                                                                       \
+        ++g_checks;                                                            \
+        if (!(expr)) {                                                         \
+            ++g_failed;                                                        \
+            std::cerr << "  FAIL  " << __FILE__ << ":" << __LINE__             \
+                      << "  " << #expr << "\n";                                \
+        }                                                                      \
+    } while (0)
 
 static void banner(const char* name) { std::cout << "  [ RUN ] " << name << "\n"; }
 
@@ -230,6 +243,11 @@ int main() {
     test_persistence();
     test_missing_files();
     test_malformed();
+    if (g_failed > 0) {
+        std::cout << "\n  TESTS FAILED  (" << g_failed << " of " << g_checks
+                  << " checks failed, 10 test groups)\n";
+        return 1;
+    }
     std::cout << "\n  ALL TESTS PASSED  (" << g_checks << " checks, 10 test groups)\n";
     return 0;
 }

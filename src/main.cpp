@@ -2,6 +2,7 @@
 #include "inventory/console_ui.hpp"
 
 #include <iostream>
+#include <string>
 
 int main() {
     inv::Inventory  inventory;
@@ -9,9 +10,13 @@ int main() {
 
     const inv::LoadResult r = storage.load(inventory);
     for (const std::string& w : r.warnings) std::cout << "  ~ " << w << "\n";
-    std::cout << "  > loaded " << inventory.products().size() << " products, "
-              << inventory.suppliers().size() << " suppliers, "
-              << inventory.transactions().size() << " transactions\n";
+        auto plural = [](std::size_t n, const char* word) {
+        return std::to_string(n) + " " + word + (n == 1 ? "" : "s");
+    };
+    std::cout << "  > loaded " << plural(inventory.products().size(),     "product")
+              << ", "          << plural(inventory.suppliers().size(),    "supplier")
+              << ", "          << plural(inventory.transactions().size(), "transaction")
+              << "\n";
 
     inv::ConsoleUI ui(inventory, storage);
     ui.run();
